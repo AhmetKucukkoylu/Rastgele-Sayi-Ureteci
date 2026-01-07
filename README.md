@@ -50,6 +50,23 @@ FONKSİYON Encrypt(Plaintext, Key):
     DÖNDÜR State (Ciphertext)
 ```
 
+### Akış Diyagramı
+
+Algoritmanın genel işleyişi aşağıdaki gibidir:
+
+```mermaid
+graph TD
+    A[Girdi: Metin ve Anahtar] --> B[Anahtar Genişletme (CollatzRNG)]
+    B --> C{Tur Döngüsü (1..9)}
+    C -->|Her Tur İçin| D[Dinamik S-Kutusu Üret]
+    D --> E[SubBytes (Karıştırma)]
+    E --> F[ShiftRows (Kaydırma)]
+    F --> G[AddRoundKey (Anahtar Ekleme)]
+    G --> C
+    C -->|Döngü Bitti| H[Final Turu]
+    H --> I[Çıktı: Şifreli Metin]
+```
+
 ## Proje Yapısı
 
 - `src/`: Kaynak kodları içerir.
