@@ -37,25 +37,25 @@ Algoritmanın çalışma prensibi aşağıdaki şemada gösterilmiştir:
 
 ```mermaid
 graph TD
-    Basla[BAŞLA: Düz Metin ve Anahtar] --> Ayarlar[Hazırlık: Anahtarı Al ve Durumu Başlat]
-    Ayarlar --> AnahtarGen[Anahtar Genişletme (CollatzRNG)]
+    Basla["BAŞLA: Düz Metin ve Anahtar"] --> Ayarlar["Hazırlık: Anahtarı Al ve Durumu Başlat"]
+    Ayarlar --> AnahtarGen["Anahtar Genişletme (CollatzRNG)"]
     
-    AnahtarGen --> TurDongusu{Tur Döngüsü (1..9)}
+    AnahtarGen --> TurDongusu{"Tur Döngüsü (1..9)"}
     
-    TurDongusu -->|Her Tur İçin| SBoxUret[Dinamik S-Kutusu Oluştur]
-    SBoxUret --> BaytDegistir[SubBytes: Baytları Karıştır]
-    BaytDegistir --> SatirKaydir[ShiftRows: Satırları Kaydır]
-    SatirKaydir --> AnahtarEkle[AddRoundKey: Tur Anahtarını Ekle]
+    TurDongusu -->|Her Tur İçin| SBoxUret["Dinamik S-Kutusu Oluştur"]
+    SBoxUret --> BaytDegistir["SubBytes: Baytları Karıştır"]
+    BaytDegistir --> SatirKaydir["ShiftRows: Satırları Kaydır"]
+    SatirKaydir --> AnahtarEkle["AddRoundKey: Tur Anahtarını Ekle"]
     
     AnahtarEkle --> TurDongusu
     
-    TurDongusu -->|Döngü Bitti| FinalTuru[Final Turu (10. Tur)]
-    FinalTuru --> SBoxFinal[S-Kutusu Oluştur]
-    SBoxFinal --> BaytFinal[SubBytes]
-    BaytFinal --> SatirFinal[ShiftRows]
-    SatirFinal --> AnahtarFinal[AddRoundKey]
+    TurDongusu -->|"Döngü Bitti"| FinalTuru["Final Turu (10. Tur)"]
+    FinalTuru --> SBoxFinal["S-Kutusu Oluştur"]
+    SBoxFinal --> BaytFinal["SubBytes"]
+    BaytFinal --> SatirFinal["ShiftRows"]
+    SatirFinal --> AnahtarFinal["AddRoundKey"]
     
-    AnahtarFinal --> Bitis[BİTİŞ: Şifreli Metin]
+    AnahtarFinal --> Bitis["BİTİŞ: Şifreli Metin"]
     
     style Basla fill:#e1f5fe,stroke:#01579b,stroke-width:2px
     style Bitis fill:#e1f5fe,stroke:#01579b,stroke-width:2px
