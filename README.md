@@ -1,90 +1,91 @@
-# Collatz Crypto
+# Collatz Kripto Projesi
 
-Bu proje, Collatz sanısının (3n+1 problemi) kaotik dinamiklerine dayalı özgün bir blok şifreleme algoritması ve sözde rastgele sayı üreteci (PRNG) uygular.
+Bu proje, Collatz sanısının (3n+1 problemi) kaotik dinamiklerinden yararlanan özgün bir blok şifreleme algoritması ve kriptografik olarak güvenli bir sözde rastgele sayı üreteci (PRNG) sunar.
 
-## Algoritma Nasıl Çalışır?
+## Proje Hakkında
+Geleneksel AES (Advanced Encryption Standard) yapısından esinlenilen bu algoritma, Galois Alanları yerine Collatz dizilerinin tahmin edilemez doğasını kullanarak verileri şifreler. Eğitim ve araştırma amaçlı geliştirilmiştir.
 
-Bu şifreleme algoritması, AES (Advanced Encryption Standard) yapısından esinlenmiştir ancak AES'in matematiksel temelleri (Galois Fields) yerine Collatz dizilerinin karmaşık ve tahmin edilemez yapısını kullanır.
+## Algoritma Çalışma Mantığı
 
-### Temel Bileşenler:
+Algoritma üç temel bileşen üzerine kuruludur:
 
 1.  **Collatz Anahtar Genişletme (Key Expansion)**:
-    *   16 byte'lık ana anahtar, bir `CollatzRNG` (Rastgele Sayı Üreteci) tohumu olarak kullanılır.
-    *   Collatz dizileri kullanılarak her tur için benzersiz "Tur Anahtarları" (Round Keys) üretilir.
+    *   16 byte uzunluğundaki ana anahtar, `CollatzRNG` algoritması için bir tohum (seed) olarak kullanılır.
+    *   Bu üreteç ile her şifreleme turu (round) için benzersiz alt anahtarlar (Round Keys) türetilir.
 
 2.  **Dinamik S-Kutusu (Dynamic S-Box)**:
-    *   AES'te sabit olan S-Kutusu, burada her tur ve her anahtar için *dinamik* olarak oluşturulur.
-    *   Bu, Collatz tabanlı bir karıştırma işlemi ile 0-255 arası sayıların yerlerinin değiştirilmesiyle (Fisher-Yates shuffle) yapılır.
+    *   Her şifreleme turunda, o tura ve anahtara özel dinamik bir S-Kutusu (Substitution Box) oluşturulur.
+    *   S-Kutusu, Fisher-Yates karıştırma algoritması ve Collatz dizileri kullanılarak 0-255 arası değerlerin rastgele permütasyonuyla elde edilir.
 
 3.  **Tur İşlemleri (Round Functions)**:
-    *   **SubBytes**: Her byte, o tur için üretilen S-Kutusu kullanılarak değiştirilir (Confusion - Karışıklık).
-    *   **ShiftRows**: Satırlar döngüsel olarak kaydırılır (Diffusion - Yayılım).
-    *   **AddRoundKey**: Blok, o turun anahtarı ile XOR işlemine tabi tutulur.
-
-## Pseudo-Code (Sözde Kod) Şeması
-
-Aşağıda şifreleme işleminin basitleştirilmiş mantığı bulunmaktadır:
-
-```text
-FONKSİYON Encrypt(Plaintext, Key):
-    // 1. Hazırlık
-    State = Plaintext
-    RoundKeys = ExpandKey(Key)  // CollatzRNG kullanarak anahtarları üret
-
-    // 2. Başlangıç Turu
-    AddRoundKey(State, RoundKeys[0])
-
-    // 3. Ana Turlar (1'den 9'a kadar)
-    DÖNGÜ i = 1 TO 9:
-        SBox = GenerateSBox(RoundKeys[i], i) // Collatz ile o tura özel S-Box yap
-        SubBytes(State, SBox)                // Byte'ları karıştır
-        ShiftRows(State)                     // Satırları kaydır
-        AddRoundKey(State, RoundKeys[i])     // Anahtarı ekle
-
-    // 4. Final Turu (MixColumns yok)
-    SBox = GenerateSBox(RoundKeys[10], 10)
-    SubBytes(State, SBox)
-    ShiftRows(State)
-    AddRoundKey(State, RoundKeys[10])
-
-    DÖNDÜR State (Ciphertext)
-```
+    *   **SubBytes (Bayt Değiştirme)**: Veri bloğundaki her bayt, dinamik S-Kutusu kullanılarak değiştirilir. Bu işlem "karışıklık" (confusion) sağlar.
+    *   **ShiftRows (Satır Kaydırma)**: Veri matrisinin satırları belirli oranlarda kaydırılır. Bu işlem "yayılım" (diffusion) sağlar.
+    *   **AddRoundKey (Anahtar Ekleme)**: Veri bloğu, o turun anahtarı ile XOR işlemine sokulur.
 
 ### Akış Diyagramı
 
-Algoritmanın genel işleyişi aşağıdaki gibidir:
+Algoritmanın genel işleyiş şeması aşağıdadır:
 
 ```mermaid
 graph TD
-    A[Girdi: Metin ve Anahtar] --> B[Anahtar Genişletme (CollatzRNG)]
-    B --> C{Tur Döngüsü (1..9)}
-    C -->|Her Tur İçin| D[Dinamik S-Kutusu Üret]
-    D --> E[SubBytes (Karıştırma)]
-    E --> F[ShiftRows (Kaydırma)]
-    F --> G[AddRoundKey (Anahtar Ekleme)]
-    G --> C
-    C -->|Döngü Bitti| H[Final Turu]
-    H --> I[Çıktı: Şifreli Metin]
+    Basla[Girdi: Düz Metin ve Anahtar] --> AnahtarGen[Anahtar Genişletme (CollatzRNG)]
+    AnahtarGen --> Dongu{Tur Döngüsü (1..9)}
+    Dongu -->|Her Tur| SBoxUret[Dinamik S-Kutusu Üret]
+    SBoxUret --> Karistir[SubBytes (Karıştırma)]
+    Karistir --> Kaydir[ShiftRows (Kaydırma)]
+    Kaydir --> AnahtarEkle[AddRoundKey (Anahtar XOR)]
+    AnahtarEkle --> Dongu
+    Dongu -->|Döngü Sonu| Final[Final Turu]
+    Final --> Cikti[Çıktı: Şifreli Metin]
 ```
 
-## Proje Yapısı
+### Sözde Kod (Pseudo-Code)
 
-- `src/`: Kaynak kodları içerir.
-    - `cipher.py`: `CollatzBlockCipher` sınıfı (Şifreleme mantığı).
-    - `prng.py`: `CollatzRNG` sınıfı (Rastgele sayı üretimi).
-    - `collatz_core.py`: Temel Collatz fonksiyonları.
-- `tests/`: Test dosyaları.
-- `demo.py`: Örnek çalıştırma betiği.
+Şifreleme fonksiyonunun basitleştirilmiş mantığı:
 
-## Nasıl Çalıştırılır
+```text
+FONKSİYON Sifrele(DuzMetin, Anahtar):
+    // 1. Hazırlık
+    Durum = DuzMetin
+    TurAnahtarlari = AnahtarGenislet(Anahtar)
 
-Projeyi çalıştırmak ve demoyu görmek için terminal'de şu komutu çalıştırın:
+    // 2. Başlangıç Turu
+    AnahtarEkle(Durum, TurAnahtarlari[0])
+
+    // 3. Ana Turlar (9 Tur)
+    DÖNGÜ i = 1'den 9'a:
+        SBox = SBoxUret(TurAnahtarlari[i], i)
+        BaytDegistir(Durum, SBox)
+        SatirKaydir(Durum)
+        AnahtarEkle(Durum, TurAnahtarlari[i])
+
+    // 4. Final Turu
+    SBox = SBoxUret(TurAnahtarlari[10], 10)
+    BaytDegistir(Durum, SBox)
+    SatirKaydir(Durum)
+    AnahtarEkle(Durum, TurAnahtarlari[10])
+
+    DÖNDÜR Durum (SifreliMetin)
+```
+
+## Proje Dosya Yapısı
+
+- **`src/`**: Kaynak kod dizini.
+    - `cipher.py`: `CollatzBlockCipher` sınıfı (Şifreleme motoru).
+    - `prng.py`: `CollatzRNG` sınıfı (Rastgele sayı üreteci).
+    - `collatz_core.py`: Collatz matematik fonksiyonları.
+- **`tests/`**: Birim testleri.
+- **`demo.py`**: Örnek kullanım ve test betiği.
+
+## Kurulum ve Çalıştırma
+
+Proje Python 3 üzerinde çalışır. Kodu test etmek için ana dizindeki demo betiğini çalıştırabilirsiniz:
 
 ```bash
 python3 demo.py
 ```
 
-### Örnek Çıktı
+### Beklenen Çıktı
 
 ```text
 === Collatz Crypto Demo ===
